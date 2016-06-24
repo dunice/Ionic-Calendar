@@ -1,7 +1,7 @@
 {
-    "name": "ionic-calendar",
+    "name": "ionic-calendar-custom",
     "version": "0.2.7",
-    "homepage": "https://github.com/twinssbc/Ionic-Calendar",
+    "homepage": "https://github.com/dunice/Ionic-Calendar",
     "authors": [
         "twinssbc <bocong@hotmail.com>"
     ],
