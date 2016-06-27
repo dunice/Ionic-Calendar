@@ -24,7 +24,7 @@ angular.module('ui.rCalendar', [])
 
         // Configuration attributes
         angular.forEach(['formatDay', 'formatDayHeader', 'formatDayTitle', 'formatWeekTitle', 'formatMonthTitle', 'formatWeekViewDayHeader', 'formatHourColumn',
-            'allDayLabel', 'noEventsLabel', 'showEventDetail', 'eventSource', 'queryMode', 'step', 'startingDayMonth', 'startingDayWeek'], function (key, index) {
+            'allDayLabel', 'noEventsLabel', 'showEventDetail', 'eventSource', 'queryMode', 'step', 'startingDayMonth', 'startingDayWeek', 'extras'], function (key, index) {
             self[key] = angular.isDefined($attrs[key]) ? (index < 9 ? $interpolate($attrs[key])($scope.$parent) : $scope.$parent.$eval($attrs[key])) : calendarConfig[key];
         });
 
@@ -37,6 +37,9 @@ angular.module('ui.rCalendar', [])
 
         $scope.$parent.$watch($attrs.eventSource, function (value) {
             self.onEventSourceChanged(value);
+        });
+        $scope.$parent.$watch($attrs.extras, function (value) {
+            self.refreshExtras(value);
         });
 
         $scope.calendarMode = $scope.calendarMode || calendarConfig.calendarMode;
@@ -178,7 +181,11 @@ angular.module('ui.rCalendar', [])
             ngModelCtrl = ngModelCtrl_;
 
             ngModelCtrl.$render = function () {
+                $scope.$emit('calendar.pre.render', self);
+
                 self.render();
+
+                $scope.$emit('calendar.post.render', self);
             };
         };
 
@@ -200,11 +207,17 @@ angular.module('ui.rCalendar', [])
         self.refreshView = function () {
             if (this.mode) {
                 this.range = this._getRange(this.currentCalendarDate);
+
+                $scope.$emit('calendar.pre.refresh', self);
+
                 if ($scope.titleChanged) {
                     $scope.titleChanged({title: self._getTitle()});
                 }
+
                 this._refreshView();
                 this.rangeChanged();
+
+                $scope.$emit('calendar.post.refresh', self);
             }
         };
 
@@ -221,6 +234,13 @@ angular.module('ui.rCalendar', [])
             self.eventSource = value;
             if (self._onDataLoaded) {
                 self._onDataLoaded();
+            }
+        };
+
+        self.refreshExtras = function(value) {
+            self.extras = value;
+            if(self._refreshView) {
+                self._refreshView();
             }
         };
 
@@ -242,6 +262,8 @@ angular.module('ui.rCalendar', [])
         };
 
         self.rangeChanged = function () {
+            $scope.$emit('calendar.pre.range-changed', self);
+
             if (self.queryMode === 'local') {
                 if (self.eventSource && self._onDataLoaded) {
                     self._onDataLoaded();
@@ -254,6 +276,8 @@ angular.module('ui.rCalendar', [])
                     });
                 }
             }
+
+            $scope.$emit('calendar.post.range-changed', self);
         };
 
         self.registerSlideChanged = function (scope) {
